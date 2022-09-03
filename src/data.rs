@@ -12,7 +12,6 @@ pub type Vector = Vec<R>;
 pub enum MatStore <T> {
     Sparse(Vec<(usize,usize,T)>),   // row, column, valuee
     RowMajor(Vec<Vec<(usize,T)>>),  // column, value
-    ColMajor(Vec<Vec<(usize,T)>>),  // row, value
 }
 
 pub struct Mat<T> {
@@ -34,15 +33,6 @@ fn convertToSparse<T> (matrix: Mat<T>) -> Mat<T> {
                     }
                 }
                 MatStore::Sparse(result)
-            },
-            MatStore::ColMajor(cmat) => {
-                let result = Vec::new();
-                for j in 0..cmat.len() {
-                    for rowval in cmat[j].iter() {
-                        result.push((rowval.0, j, rowval.1));
-                    }                
-                }
-                MatStore::Sparse(result)
             }
         };
     return Mat { store, ..matrix };
@@ -50,7 +40,6 @@ fn convertToSparse<T> (matrix: Mat<T>) -> Mat<T> {
 fn convertToRowMajor<T> (matrix: Mat<T>) -> Mat<T> {
     let store = match matrix.store {
         MatStore::RowMajor(_) => return matrix,
-        MatStore::ColMajor(_) => return convertToRowMajor(convertToSparse(matrix)),
         MatStore::Sparse(sparse) => {
             use std::iter::{repeat_with};
             let res: Vec<Vec<(usize,T)>> = repeat_with(Vec::new).take(matrix.nrows).collect();
