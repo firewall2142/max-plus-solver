@@ -36,29 +36,20 @@ fn qoplus(x: R, y: R) -> R {
 }
 
 // out <- A⊗x
-fn prod(A : &Mat, x : &Vector, out: &mut Vector) {
-    let A = A.getRowMajor();
-    let data = match A.store {
-        crate::data::MatStore::RowMajor(store) => store,
-        crate::data::MatStore::Sparse(_) => panic!("sparse unexpected!"),
-    };
+pub fn prod(A: &Mat, x: &Vector, out: &mut Vector) {
     for i in 0..x.len() {
         out[i] = 
-            data[i].iter()
+            A.store[i].iter()
                 .map(|(index,value)| otimes(value.clone(), x[index.clone()]))
                 .fold(R::Ninf, |acc, item| oplus(acc, item))
     }
 }
 
-fn qprod(A : &Mat, x : &Vector, out: &mut Vector) {
-    let A = A.getRowMajor();
-    let data = match A.store {
-        crate::data::MatStore::RowMajor(store) => store,
-        crate::data::MatStore::Sparse(_) => panic!("sparse unexpected!"),
-    };
+// out <- A⊗'x
+pub fn qprod(A: &Mat, x: &Vector, out: &mut Vector) {
     for i in 0..x.len() {
         out[i] = 
-           data[i].iter()
+            A.store[i].iter()
                 .map(|(index,value)| qotimes(value.clone(), x[index.clone()]))
                 .fold(R::Pinf, |acc, item| qoplus(acc, item))
     }
