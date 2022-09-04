@@ -1,5 +1,5 @@
 use std::cmp::{max, min};
-use data::{Matrix, R, Vector};
+use super::data::{Mat, R, Vector};
 
 // x⊗y = x + y {Ninf + Pinf = Ninf}
 fn otimes(x: R, y: R) -> R {
@@ -36,20 +36,30 @@ fn qoplus(x: R, y: R) -> R {
 }
 
 // out <- A⊗x
-fn prod(A : &Matrix, x : &Vector, out: &mut Vector) {
+fn prod(A : &Mat, x : &Vector, out: &mut Vector) {
+    let A = A.getRowMajor();
+    let data = match A.store {
+        crate::data::MatStore::RowMajor(store) => store,
+        crate::data::MatStore::Sparse(_) => panic!("sparse unexpected!"),
+    };
     for i in 0..x.len() {
         out[i] = 
-            A[i].iter()
-                .map(|iv| otimes(iv.value, x[iv.index]))
+            data[i].iter()
+                .map(|(index,value)| otimes(value.clone(), x[index.clone()]))
                 .fold(R::Ninf, |acc, item| oplus(acc, item))
     }
 }
 
-fn qprod(A : &Matrix, x : &Vector, out: &mut Vector) {
+fn qprod(A : &Mat, x : &Vector, out: &mut Vector) {
+    let A = A.getRowMajor();
+    let data = match A.store {
+        crate::data::MatStore::RowMajor(store) => store,
+        crate::data::MatStore::Sparse(_) => panic!("sparse unexpected!"),
+    };
     for i in 0..x.len() {
         out[i] = 
-            A[i].iter()
-                .map(|iv| qotimes(iv.value, x[iv.index]))
+           data[i].iter()
+                .map(|(index,value)| qotimes(value.clone(), x[index.clone()]))
                 .fold(R::Pinf, |acc, item| qoplus(acc, item))
     }
 }
