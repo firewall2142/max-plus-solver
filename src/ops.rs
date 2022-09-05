@@ -1,6 +1,8 @@
 use std::cmp::{max, min};
 use super::data::{Mat, R, Vector};
 
+// TODO: use a generic for matrix multiplication
+
 // x⊗y = x + y {Ninf + Pinf = Ninf}
 fn otimes(x: R, y: R) -> R {
     match (x, y) {
@@ -37,7 +39,8 @@ fn qoplus(x: R, y: R) -> R {
 
 // out <- A⊗x
 pub fn prod(A: &Mat, x: &Vector, out: &mut Vector) {
-    for i in 0..x.len() {
+    out.resize(A.nrows, R::Ninf);
+    for i in 0..A.nrows {
         out[i] = 
             A.store[i].iter()
                 .map(|(index,value)| otimes(value.clone(), x[index.clone()]))
@@ -47,10 +50,45 @@ pub fn prod(A: &Mat, x: &Vector, out: &mut Vector) {
 
 // out <- A⊗'x
 pub fn qprod(A: &Mat, x: &Vector, out: &mut Vector) {
-    for i in 0..x.len() {
+    out.resize(A.nrows, R::Pinf);
+    for i in 0..A.nrows {
         out[i] = 
             A.store[i].iter()
                 .map(|(index,value)| qotimes(value.clone(), x[index.clone()]))
                 .fold(R::Pinf, |acc, item| qoplus(acc, item))
+    }
+}
+
+mod test {
+    use super::*;
+
+    #[test]
+    fn prod_qprod_test() {
+        use R::*;
+
+        let A = Mat::new(&vec![
+            vec![R::Int(3), R::Ninf  , R::Int(0)],
+            vec![R::Int(1), R::Int(1), R::Int(0)],
+            vec![R::Ninf  , R::Int(1), R::Int(2)],
+        ]);
+        let x : Vector = vec![R::Int(5), R::Int(3), R::Int(1)];
+        
+        let mut Ax : Vector = Vec::new();
+        prod(&A, &x, &mut Ax);
+        
+        println!("Ax = {:?}", Ax);
+        debug_assert_eq!(Ax, vec![Int(8), Int(6), Int(4)]);
+
+        let B = Mat::new(&vec![
+            vec![R::Int(1), R::Int(1)],
+            vec![R::Int(3), R::Int(2)],
+            vec![R::Int(3), R::Int(1)],
+        ]);
+
+        let mut y : Vector = Vec::new();
+        qprod(&B.conjugate(), &Ax, &mut y);
+        println!("y = B' ⊗' (A ⊗ x) = {:?}", Ax);
+        debug_assert_eq!(y, vec![Int(1), Int(3)]);
+
     }
 }

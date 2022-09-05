@@ -1,7 +1,7 @@
 use std::ops::Neg;
 use std::iter;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub enum R { Pinf, Int(i32), Ninf}
 
 impl Neg for R {
@@ -26,8 +26,9 @@ impl PartialEq for R {
 
 
 pub type Vector = Vec<R>;
-type MatStore = Vec<Vec<(usize,R)>>;
+pub type MatStore = Vec<Vec<(usize,R)>>;
 
+#[derive(Debug, Clone)]
 pub struct Mat {
     pub store : MatStore,
     pub nrows : usize,
@@ -44,7 +45,10 @@ impl Mat {
         let mut store: MatStore = iter::repeat_with(Vec::new).take(nrows).collect();
         for (row, colvec) in v.iter().enumerate() {
             for (col, val) in colvec.iter().enumerate() {
-                store[row].push((col, val.clone()));
+                match val {
+                    R::Ninf => (),
+                    _ => store[row].push((col, val.clone()))
+                }
             }
         }
 
@@ -72,5 +76,31 @@ impl Mat {
             store[r].push((c,v));
         }
         return Mat { store, nrows, ncols, emp_val};
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_new() {
+        let A = Mat::new(&vec![
+            vec![R::Int(3), R::Ninf  , R::Int(0)],
+            vec![R::Int(1), R::Int(1), R::Int(0)],
+            vec![R::Ninf  , R::Int(1), R::Int(2)],
+        ]);
+        use R::*;
+        let expected = Mat { 
+            store: vec![
+                vec![(0, Int(3)), (2, Int(0))], 
+                vec![(0, Int(1)), (1, Int(1)), (2, Int(0))], 
+                vec![(1, Int(1)), (2, Int(2))]],
+            nrows: 3, 
+            ncols: 3, 
+            emp_val: Ninf };
+        assert_eq!(A.store, expected.store);
+        assert_eq!(A.nrows, expected.nrows);
+        assert_eq!(A.ncols, expected.ncols);
+        assert_eq!(A.emp_val, expected.emp_val);
     }
 }
