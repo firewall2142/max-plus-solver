@@ -1,7 +1,7 @@
 #![allow(non_snake_case)]
-mod data;
+pub mod data;
 mod ops;
-mod parser;
+pub mod parser;
 use data::{Mat, R, Vector};
 use ops::{prod, qprod};
 use std::iter;
@@ -52,6 +52,8 @@ pub fn cgb_solve(problem : CgbProblem) -> Option<(Vector, Vector)> {
             eprintln!("Took {} iterations", iteration);
             return Some((x,y));
         }
+
+        eprintln!("iteration = {}", iteration);
     }
     return None;
 }

@@ -44,14 +44,15 @@ Translator.translate(x) ->
 
 */
 
+use std::collections::binary_heap::Iter;
 use std::io::BufRead;
 use std::{fs, io};
 use std::collections::HashMap;
-use crate::data::{MatStore, Mat};
+use crate::data::{MatStore, Mat, Vector};
 use crate::{R, BzProblem};
 
 #[derive(Debug)]
-struct Translator {
+pub struct Translator {
     map : HashMap<String, usize>,
     counter: usize,
 }
@@ -75,10 +76,14 @@ impl Translator {
             }
         }
     }
+
+    pub fn solution_kvp(&self, sol: &Vector) -> Vec<(&String, R)> {
+        self.map.iter().map(|(var, ind)| (var, sol[*ind])).collect()
+    }
 }
 
 
-fn process(filepath: &str) -> (BzProblem, Translator) {
+pub fn parse_file(filepath: &str) -> (BzProblem, Translator) {
     let file = fs::File::open(filepath).expect("Error openning file");
     let reader = io::BufReader::new(file);
 
@@ -133,7 +138,7 @@ mod tests {
     #[test]
     fn process_test() {
         let filename = "input/test1.txt";
-        let bz = process(filename).0;
+        let bz = parse_file(filename).0;
         let res = solve(bz).unwrap();
         println!("solution found = {:?}", res)
     }
