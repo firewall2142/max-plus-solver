@@ -60,10 +60,10 @@ pub fn qprod(A: &Mat, x: &Vector, out: &mut Vector) {
 }
 
 mod test {
-    use super::*;
 
     #[test]
     fn prod_qprod_test() {
+        use super::*;
         use R::*;
 
         let A = Mat::new(&vec![

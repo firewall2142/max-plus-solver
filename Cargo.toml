@@ -10,7 +10,7 @@ name = "mpsolverLib"
 path = "src/lib.rs"
 
 [[bin]]
-name = "mpsolverBin"
+name = "mpsolver"
 path = "src/main.rs"
 
 [dependencies]

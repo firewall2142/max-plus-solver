@@ -44,7 +44,6 @@ Translator.translate(x) ->
 
 */
 
-use std::collections::binary_heap::Iter;
 use std::io::BufRead;
 use std::{fs, io};
 use std::collections::HashMap;
@@ -131,15 +130,11 @@ pub fn parse_file(filepath: &str) -> (BzProblem, Translator) {
 }
 
 mod tests {
-    use crate::solve;
-
-    use super::*;
-    
     #[test]
     fn process_test() {
         let filename = "input/test1.txt";
-        let bz = parse_file(filename).0;
-        let res = solve(bz).unwrap();
+        let bz = super::parse_file(filename).0;
+        let res = crate::solve(bz).unwrap();
         println!("solution found = {:?}", res)
     }
 }
